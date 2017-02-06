@@ -5,6 +5,58 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 
+def find_order(pts):
+    """
+    输入四个点，返回矩形边界坐标
+    :param pts: 以(x, y)为元素的列表
+    :return: x1(小), x2(大), y1(小), y2(大)
+    """
+    if abs(pts[0][0] - pts[1][0]) <= 10:  # 当前两点x轴坐标相同时，y轴坐标必定不同
+        if pts[0][1] < pts[1][1]:
+            y1 = pts[0][1]
+            y2 = pts[1][1]
+        else:
+            y1 = pts[1][1]
+            y2 = pts[0][1]
+
+        if pts[0][0] < pts[2][0]:
+            x1 = pts[0][0]
+            x2 = pts[2][0]
+        else:
+            x1 = pts[2][0]
+            x2 = pts[0][0]
+    elif abs(pts[0][0] - pts[2][0]) <= 10:
+        if pts[0][1] < pts[2][1]:
+            y1 = pts[0][1]
+            y2 = pts[2][1]
+        else:
+            y1 = pts[2][1]
+            y2 = pts[0][1]
+
+        if pts[0][0] < pts[1][0]:
+            x1 = pts[0][0]
+            x2 = pts[1][0]
+        else:
+            x1 = pts[1][0]
+            x2 = pts[0][0]
+    else:
+        if pts[0][1] < pts[3][1]:
+            y1 = pts[0][1]
+            y2 = pts[3][1]
+        else:
+            y1 = pts[3][1]
+            y2 = pts[0][1]
+
+        if pts[0][0] < pts[1][0]:
+            x1 = pts[0][0]
+            x2 = pts[1][0]
+        else:
+            x1 = pts[1][0]
+            x2 = pts[0][0]
+
+    return x1, x2, y1, y2
+
+
 def cut_panel(img_filename, template_filename, test=True):
     """
     读取图像、十字标记模版，通过模版匹配定位表盘，并剪裁待处理区域
@@ -51,10 +103,7 @@ def cut_panel(img_filename, template_filename, test=True):
 
     # 确定表盘的中心
     ratio = 0.65    # 剪裁比例
-    x1 = pts1[0][0]
-    x2 = pts1[1][0]
-    y1 = pts1[0][1]
-    y2 = pts1[3][1]
+    x1, x2, y1, y2 = find_order(pts1)
     delta_x = x2 - x1
     delta_y = y2 - y1
     x1 = x1 + (1 - ratio) / 2 * delta_x
@@ -176,7 +225,7 @@ def main():
 
     for filename in files:
         img = cut_panel(filename, template, test=True)
-        lines = find_lines(img, test=True)
+        lines = find_lines(img, test=False)
         angle = find_angle(lines)
         print u"示数为:", angle
 
