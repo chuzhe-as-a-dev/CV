@@ -5,7 +5,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 
-FILENAME = "../pic/cut.png"
+FILENAME = "../pic/cut1.png"
 
 
 def find_lines(filename, test=True):
@@ -23,8 +23,8 @@ def find_lines(filename, test=True):
     canny_thr_low = 100     # Canny边缘检测低阈值
     thr_high_over_lows = np.linspace(2.5, 3.5, 5)   # Canny高低阈值比值调参范围
     thr_high_over_low = 3.25    # Canny高低阈值比值
-    hough_thrs = np.arange(20, 31, 1)    # Hough线检测阈值调参范围
-    hough_thr = 28  # Hough线检测阈值
+    hough_thrs = np.arange(50, 100, 10)    # Hough线检测阈值调参范围
+    hough_thr = 60  # Hough线检测阈值
     angle_epsilon = 10  # 线的角度范围允许误差
 
     # 读取图像
