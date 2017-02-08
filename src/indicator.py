@@ -99,7 +99,7 @@ def cut_panel(img_filename, template_filename, test=True):
             cv2.rectangle(img, pt, (pt[0] + w, pt[1] + h), (0, 0, 255), 2)
     # 测试时画图可视化
     if test:
-        cv2.imshow("wa", img), cv2.waitKey(), cv2.destroyAllWindows()
+        cv2.imwrite("../result/{}-cross.png".format(img_filename[img_filename.rindex("/"):img_filename.rindex(".")]), img)
 
     # 确定表盘的中心
     ratio = 0.65    # 剪裁比例
@@ -119,12 +119,12 @@ def cut_panel(img_filename, template_filename, test=True):
 
     # 测试时画图可视化
     if test:
-        cv2.imshow("wa", img), cv2.waitKey(), cv2.destroyAllWindows()
+        cv2.imwrite("../result/{}-cut.png".format(img_filename[img_filename.rindex("/"):img_filename.rindex(".")]), img)
 
     return img
 
 
-def find_lines(img, test=True):
+def find_lines(img, img_filename=None, test=True):
     """
     从仪表图像，将一定角度范围的线条找到并返回其相关参数
     :param filename: 图像地址
@@ -145,45 +145,46 @@ def find_lines(img, test=True):
 
     # 测试时将调参过程可视化
     if test:
+        pass
         # 针对Hough线检测阈值
-        for index, hough_thr in enumerate(hough_thrs):
-            # 转换为灰度图像
-            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            # 高斯模糊去除不必要的细节
-            cv2.GaussianBlur(gray, (gauss_size, gauss_size), 0, gray)
-            # 拉伸动态范围
-            gray = gray - gray.min()
-            gray = (gray * 255.0 / gray.max()).astype(np.uint8)
-            # 应用幂律变换，压缩低灰度范围
-            c = 255.0 / gray.max() ** power
-            gray = (c * gray.astype(np.float) ** power).astype(np.uint8)  # 幂律变换
-            # Canny边缘检测
-            cv2.Canny(gray, canny_thr_low, canny_thr_low * thr_high_over_low, gray)   # Canny边缘检测
-            # Hough线检测，并新建图像draw将线画上去
-            lines = cv2.HoughLines(gray, 1, np.pi / 180, int(hough_thr))
-            draw = cv2.cvtColor(gray, cv2.COLOR_GRAY2RGB)
-            if lines is not None:
-                for line in lines:
-                    rho, theta = line[0]
-                    # 只画出特定角度的线条
-                    if theta <= np.pi * angle_epsilon / 180 or theta >= np.pi * (90 - angle_epsilon) / 180:
-                        a = np.cos(theta)
-                        b = np.sin(theta)
-                        x0 = a * rho
-                        y0 = b * rho
-                        x1 = int(x0 + 1000 * -b)
-                        y1 = int(y0 + 1000 * a)
-                        x2 = int(x0 - 1000 * -b)
-                        y2 = int(y0 - 1000 * a)
-
-                        cv2.line(draw, (x1, y1), (x2, y2), (255, 0, 0), 1)
-
-            plt.subplot(1, len(hough_thrs), index + 1)
-            plt.imshow(draw)
-            plt.title("{}".format(hough_thr))
-            plt.xticks([]), plt.yticks([])
-
-        plt.show()
+        # for index, hough_thr in enumerate(hough_thrs):
+        #     # 转换为灰度图像
+        #     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        #     # 高斯模糊去除不必要的细节
+        #     cv2.GaussianBlur(gray, (gauss_size, gauss_size), 0, gray)
+        #     # 拉伸动态范围
+        #     gray = gray - gray.min()
+        #     gray = (gray * 255.0 / gray.max()).astype(np.uint8)
+        #     # 应用幂律变换，压缩低灰度范围
+        #     c = 255.0 / gray.max() ** power
+        #     gray = (c * gray.astype(np.float) ** power).astype(np.uint8)  # 幂律变换
+        #     # Canny边缘检测
+        #     cv2.Canny(gray, canny_thr_low, canny_thr_low * thr_high_over_low, gray)   # Canny边缘检测
+        #     # Hough线检测，并新建图像draw将线画上去
+        #     lines = cv2.HoughLines(gray, 1, np.pi / 180, int(hough_thr))
+        #     draw = cv2.cvtColor(gray, cv2.COLOR_GRAY2RGB)
+        #     if lines is not None:
+        #         for line in lines:
+        #             rho, theta = line[0]
+        #             # 只画出特定角度的线条
+        #             if theta <= np.pi * angle_epsilon / 180 or theta >= np.pi * (90 - angle_epsilon) / 180:
+        #                 a = np.cos(theta)
+        #                 b = np.sin(theta)
+        #                 x0 = a * rho
+        #                 y0 = b * rho
+        #                 x1 = int(x0 + 1000 * -b)
+        #                 y1 = int(y0 + 1000 * a)
+        #                 x2 = int(x0 - 1000 * -b)
+        #                 y2 = int(y0 - 1000 * a)
+        #
+        #                 cv2.line(draw, (x1, y1), (x2, y2), (255, 0, 0), 1)
+        #
+        #     plt.subplot(1, len(hough_thrs), index + 1)
+        #     plt.imshow(draw)
+        #     plt.title("{}".format(hough_thr))
+        #     plt.xticks([]), plt.yticks([])
+        #
+        # plt.show()
 
     # 转换为灰度图像
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -197,14 +198,30 @@ def find_lines(img, test=True):
     gray = (c * gray.astype(np.float) ** power).astype(np.uint8)  # 幂律变换
     # Canny边缘检测
     cv2.Canny(gray, canny_thr_low, canny_thr_low * thr_high_over_low, gray)  # Canny边缘检测
+    if test:
+        cv2.imwrite("../result/{}-Canny.png".format(img_filename[img_filename.rindex("/"):img_filename.rindex(".")]), gray)
     # Hough线检测，将角度符合要求的线条参数添加到result列表中
     lines = cv2.HoughLines(gray, 1, np.pi / 180, int(hough_thr))
     result = []
     if lines is not None:
         for line in lines:
             rho, theta = line[0]
+            # 只关心特定角度的线条
             if theta <= np.pi * angle_epsilon / 180 or theta >= np.pi * (90 - angle_epsilon) / 180:
                 result.append((rho, theta))
+                if test:
+                    a = np.cos(theta)
+                    b = np.sin(theta)
+                    x0 = a * rho
+                    y0 = b * rho
+                    x1 = int(x0 + 1000 * -b)
+                    y1 = int(y0 + 1000 * a)
+                    x2 = int(x0 - 1000 * -b)
+                    y2 = int(y0 - 1000 * a)
+
+                    cv2.line(img, (x1, y1), (x2, y2), (255, 0, 0), 2)
+    if test:
+        cv2.imwrite("../result/{}-Hough.png".format(img_filename[img_filename.rindex("/"):img_filename.rindex(".")]), img)
 
     return result
 
@@ -225,7 +242,7 @@ def main():
 
     for filename in files:
         img = cut_panel(filename, template, test=True)
-        lines = find_lines(img, test=False)
+        lines = find_lines(img, img_filename=filename, test=True)
         angle = find_angle(lines)
         print u"示数为:", angle
 

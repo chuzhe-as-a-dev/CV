@@ -56,16 +56,16 @@ def find_order(pts):
     return x1, x2, y1, y2
 
 
-def cut_leds(img_filename, template_filename, test=True):
+def cut_leds(filename, template_filename, test=True):
     """
     读取图像、十字标记模版，通过模版匹配定位表盘，并剪裁待处理区域
-    :param img_filename: 图像文件名
+    :param filename: 图像文件名
     :param template_filename: 模版文件名
     :param test: 测试模式
     :return: 剪裁后的表盘图像
     """
     # 读取图像
-    img = cv2.imread(img_filename)
+    img = cv2.imread(filename)
     # 转换为灰度图像
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     # 读取十字标记模版
@@ -98,7 +98,7 @@ def cut_leds(img_filename, template_filename, test=True):
             cv2.rectangle(img, pt, (pt[0] + w, pt[1] + h), (0, 0, 255), 2)
     # 测试时画图可视化
     if test:
-        cv2.imshow("wa", img), cv2.waitKey(), cv2.destroyAllWindows()
+        cv2.imwrite("../result/{}-cross.png".format(filename[filename.rindex("/"):filename.rindex(".")]), img)
 
     # 确定透视变换对应的点
     x1, x2, y1, y2 = find_order(pts1)
@@ -110,12 +110,12 @@ def cut_leds(img_filename, template_filename, test=True):
 
     # 测试时画图可视化
     if test:
-        cv2.imshow("wa", img), cv2.waitKey(), cv2.destroyAllWindows()
+        cv2.imwrite("../result/{}-cut.png".format(filename[filename.rindex("/"):filename.rindex(".")]), img)
 
     return img
 
 
-def find_led(img, test=True):
+def find_led(img, filename=None, test=True):
     gauss_size = 9  # 高斯模糊核大小
     thr_level = 0.95     # 阈值为最大灰度此值
 
@@ -127,7 +127,7 @@ def find_led(img, test=True):
     high = img.max()
     cv2.threshold(gray, high * thr_level, 255, cv2.THRESH_BINARY, gray)
     if test:
-        cv2.imshow("wa", gray), cv2.waitKey()
+        cv2.imwrite("../result/{}-thr.png".format(filename[filename.rindex("/"):filename.rindex(".")]), gray)
     # 寻找亮度中心（opencv里的x轴，numpy里的y轴）
     x_mean = np.nonzero(gray)[1].mean()
     if x_mean < img.shape[1] / 2:
@@ -141,7 +141,7 @@ def main():
     template = "../pic/cross.png"
     for filename in files:
         img = cut_leds(filename, template, test=True)
-        led = find_led(img, test=True)
+        led = find_led(img, filename, test=True)
         print u"亮灯为:", led
 
 

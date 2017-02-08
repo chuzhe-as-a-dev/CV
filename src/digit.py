@@ -26,7 +26,8 @@ def find_numbers(filename, test=True):
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (close_open_size, close_open_size))
     cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel, img)
     if test:
-        cv2.imshow("wa", img), cv2.waitKey()
+        _, temp = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY)
+        cv2.imwrite("../result/{}-threshold.png".format(filename[filename.rindex("/"):filename.rindex(".")]), temp)
     # 剪裁图像区域
     row, col = img.shape
     for row_index, row_sum in enumerate(img.sum(1)):
@@ -47,12 +48,13 @@ def find_numbers(filename, test=True):
             break
     cut = img[up:down, left:right]
     if test:
-        cv2.imshow("wa", cut), cv2.waitKey()
+        _, temp = cv2.threshold(cut, 0, 255, cv2.THRESH_BINARY)
+        cv2.imwrite("../result/{}-cut.png".format(filename[filename.rindex("/"):filename.rindex(".")]), temp)
 
     return cut
 
 
-def cut_numbers(img, test=True):
+def cut_numbers(img, filename=None, test=True):
     """
     根据示数的阈值图像分割各个数字
     :param img: 示数框部分的阈值图像
@@ -75,24 +77,24 @@ def cut_numbers(img, test=True):
     for left, right in zip(border_cols[::2], border_cols[1::2]):
         number = img[:, left:right]
         numbers.append(number)
-        if test:
-            cv2.imshow("wa", number), cv2.waitKey()
+
+    if test:
+        for index, number in enumerate(numbers):
+            plt.subplot(1, len(numbers), index + 1)
+            plt.imshow(number, cmap="gray")
+            plt.xticks([]), plt.yticks([])
+        plt.savefig("../result/{}-sep.png".format(filename[filename.rindex("/"):filename.rindex(".")]))
 
     return numbers
 
 
-def read_number(numbers, test=True):
+def read_number(numbers, filename=None, test=True):
     """
     根据图像列表得到示数
     :param numbers: 分割后的图像列表
     :param test: 是否可视化调参
     :return: 示数（浮点）
     """
-    if test:
-        for index, img in zip(range(4), numbers):
-            plt.subplot(1, 4, index + 1)
-            plt.imshow(img, cmap="gray")
-        plt.show()
 
     # 寻找小数点
     end_cols = []
@@ -171,7 +173,8 @@ def read_number(numbers, test=True):
             plt.subplot(1, 4, index + 1)
             plt.imshow(img, cmap="gray")
             plt.title(str(number))
-        plt.show()
+            plt.xticks([]), plt.yticks([])
+        plt.savefig("../result/{}-num.png".format(filename[filename.rindex("/"):filename.rindex(".")]))
 
     # 计算结果
     result = 0.0
@@ -188,9 +191,9 @@ def main():
     filenames = ["../pic/dig1.PNG", "../pic/dig2.PNG", "../pic/dig3.PNG", "../pic/dig4.PNG", "../pic/dig5.PNG"]
 
     for filename in filenames:
-        img = find_numbers(filename, test=False)
-        number_segs = cut_numbers(img, test=False)
-        result = read_number(number_segs, test=True)
+        img = find_numbers(filename, test=True)
+        number_segs = cut_numbers(img, filename, test=True)
+        result = read_number(number_segs, filename, test=True)
         print u"示数为:", result
 
 
