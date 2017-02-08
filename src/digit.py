@@ -3,13 +3,15 @@
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.externals import joblib
-from sklearn import datasets
-from skimage.feature import hog
-from sklearn.svm import LinearSVC
 
 
 def find_numbers(filename, test=True):
+    """
+    从原始图像中找出示数，返回示数框的阈值图像
+    :param filename: 原始图像文件路径
+    :param test: 是否可视化调参
+    :return: 示数框的阈值图像
+    """
     # 一些参数
     thr_level = 2  # 阈值为均值的此值倍
     border_thr = 11     # 边缘检测的阈值
@@ -51,6 +53,12 @@ def find_numbers(filename, test=True):
 
 
 def cut_numbers(img, test=True):
+    """
+    根据示数的阈值图像分割各个数字
+    :param img: 示数框部分的阈值图像
+    :param test: 是否可视化调参
+    :return: 单独数字图像的列表
+    """
     # 检测数字边界
     border_cols = [0]
     col_sum = img.sum(0)
@@ -74,6 +82,12 @@ def cut_numbers(img, test=True):
 
 
 def read_number(numbers, test=True):
+    """
+    根据图像列表得到示数
+    :param numbers: 分割后的图像列表
+    :param test: 是否可视化调参
+    :return: 示数（浮点）
+    """
     if test:
         for index, img in zip(range(4), numbers):
             plt.subplot(1, 4, index + 1)
